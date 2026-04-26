@@ -1,5 +1,5 @@
 {
-    "name": "obfuscator-io-deobfuscator",
+    "name": "obfuscator-io-deobfuscator-phased",
     "version": "1.0.6",
     "description": "A deobfuscator for scripts obfuscated by Obfuscator.io",
     "main": "dist/index.js",

@@ -3,40 +3,9 @@ import { parse } from '@babel/parser';
 import { program } from 'commander';
 import fs from 'fs';
 import { Deobfuscator } from './deobfuscator/deobfuscator';
-import { Config, defaultConfig, TransformationKey } from './deobfuscator/transformations/config';
+import { Config, defaultConfig } from './deobfuscator/transformations/config';
 
 const pkg = require('../package.json');
-
-const ALL_FEATURE_KEYS: TransformationKey[] = [
-    'expressionSimplification',
-    'propertySimplification',
-    'objectSimplification',
-    'proxyFunctionInlining',
-    'stringRevealing',
-    'antiTamperRemoval',
-    'deadBranchRemoval',
-    'controlFlowRecovery',
-];
-
-const PHASE1_ENABLED = new Set<TransformationKey>([
-    'expressionSimplification',
-    'propertySimplification',
-    'objectSimplification',
-    'proxyFunctionInlining',
-    'stringRevealing',
-    'antiTamperRemoval',
-    'deadBranchRemoval',
-]);
-
-const PHASE2_ENABLED = new Set<TransformationKey>([
-    'expressionSimplification',
-    'propertySimplification',
-    'objectSimplification',
-    'stringRevealing',
-    'controlFlowRecovery',
-    'antiTamperRemoval',
-    'deadBranchRemoval',
-]);
 
 program
     .name(pkg.name)
@@ -46,8 +15,6 @@ program
     .argument('<input_path>', 'file to deobfuscate')
     .option('-o, --output [output_path]', 'output file path', 'deobfuscated.js')
     .option('-s, --silent', 'emit nothing to stdout')
-    .option('--phase1, --p1', 'Phase 1: enable safe transformations (expressions, properties, objects, proxy functions, strings, anti-tamper, dead code). Disables controlFlowRecovery.')
-    .option('--phase2, --p2', 'Phase 2: enable all transformations including controlFlowRecovery. Disables proxyFunctionInlining.')
     .option('--no-expression-simplification', 'disable expression simplification')
     .option('--no-property-simplification', 'disable property simplification')
     .option('--no-object-simplification', 'disable object simplification')
@@ -57,19 +24,7 @@ program
     .option('--no-dead-code', 'disable dead branch removal')
     .option('--no-control-flow', 'disable control flow recovery')
     .action((input, options) => {
-        const phase1 = !!options.phase1;
-        const phase2 = !!options.phase2;
-
         const configOverwrite: Partial<Config> = {};
-
-        for (const key of ALL_FEATURE_KEYS) {
-            configOverwrite[key] = { isEnabled: false };
-        }
-
-        const enabledSet = phase2 ? PHASE2_ENABLED : phase1 ? PHASE1_ENABLED : new Set<TransformationKey>();
-        for (const key of enabledSet) {
-            configOverwrite[key] = { isEnabled: true };
-        }
 
         if (options.expressionSimplification === false) configOverwrite['expressionSimplification'] = { isEnabled: false };
         if (options.propertySimplification === false) configOverwrite['propertySimplification'] = { isEnabled: false };
